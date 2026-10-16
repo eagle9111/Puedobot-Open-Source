@@ -145,6 +145,9 @@ puedobot scan /path/to/target/project
 
 ## 📖 CLI Commands
 
+> [!TIP]
+> Run `puedobot --help` (or simply `puedobot`) at any time to reveal all commands, subcommands, arguments, and flag options.
+
 | Command | Description |
 | :--- | :--- |
 | `puedobot scan <path>` | Run a comprehensive multi-engine audit against target code |
