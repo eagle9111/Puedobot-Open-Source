@@ -131,8 +131,11 @@ AI_PRIORITY=local
 ### 4. Initialize Database & Run
 
 ```bash
+# Ensure your virtual environment is active:
+source .venv/bin/activate
+
 # 1. Initialize DB tables
-python -m scripts.init_db
+python3 -m scripts.init_db
 
 # 2. Start the background scan service
 uvicorn app.server.main:app --host 127.0.0.1 --port 8000 &
