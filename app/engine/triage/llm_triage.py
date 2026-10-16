@@ -149,11 +149,14 @@ def _local_base():
 
 
 def get_cloud_llm(schema: Type[SchemaT] = SecurityTriageResult):
-    return _cloud_base().with_structured_output(schema)
+    model = _cloud_base()
+    if isinstance(model, ChatOpenAI):
+        return model.with_structured_output(schema, method="function_calling")
+    return model.with_structured_output(schema)
 
 
 def get_local_llm(schema: Type[SchemaT] = SecurityTriageResult):
-    return _local_base().with_structured_output(schema)
+    return _local_base().with_structured_output(schema, method="function_calling")
 
 
 def _request_timeout(maximum: float) -> float:
@@ -170,7 +173,9 @@ def _routed_llm(schema: Type[SchemaT]):
         messages = prompt.to_messages()
         input_bytes = sum(len(str(message.content).encode("utf-8")) + 64 for message in messages)
         failure = None
+        errors: list[str] = []
         for provider in providers:
+            provider_label = "Local AI" if provider == get_local_llm else "Cloud AI"
             for attempt in range(2):
                 budget = CURRENT_BUDGET.get()
                 if budget:
@@ -180,8 +185,14 @@ def _routed_llm(schema: Type[SchemaT]):
                     return provider(schema).invoke(prompt)
                 except Exception as exc:
                     failure = exc
+                    err_msg = f"{provider_label} (attempt {attempt + 1}): {exc}"
+                    logger.warning(err_msg)
+                    errors.append(err_msg)
                     if attempt == 0:
                         time.sleep(budget.remaining(0.5) if budget else 0.5)
+        if errors and len(set(errors)) > 1:
+            distinct_errors = list(dict.fromkeys(errors))
+            raise RuntimeError(f"All AI providers failed: {' | '.join(distinct_errors)}") from failure
         assert failure is not None
         raise failure
     return RunnableLambda(invoke)

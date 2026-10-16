@@ -18,6 +18,7 @@ def render_scan_stream(events: Generator[dict[str, Any], None, None]) -> None:
     confirmed_findings: list[dict[str, Any]] = []
     dismissed_findings: list[dict[str, Any]] = []
     low_conf_findings: list[dict[str, Any]] = []
+    triage_errors: list[dict[str, Any]] = []
     interrupted_early = False
     partial_scan = False
     last_event: dict[str, Any] = {}
@@ -129,6 +130,7 @@ def render_scan_stream(events: Generator[dict[str, Any], None, None]) -> None:
                         )
 
                     elif event_type == "triage_error":
+                        triage_errors.append(event)
                         console.print(
                             f"  [bold red]⚠ Triage Warning:[/bold red] {event['file']}:{event['line']} - {event['error']}"
                         )
@@ -193,6 +195,7 @@ def render_scan_stream(events: Generator[dict[str, Any], None, None]) -> None:
         files_table.add_column("Status", justify="right")
 
         vuln_files = {f["file"]: f for f in confirmed_findings}
+        error_files = {e["file"] for e in triage_errors if e.get("file")}
 
         for item in scanned_files:
             fpath = item["file"]
@@ -200,6 +203,8 @@ def render_scan_stream(events: Generator[dict[str, Any], None, None]) -> None:
             if fpath in vuln_files:
                 v = vuln_files[fpath]
                 status_badge = f"[bold red]VULNERABLE ({v['severity']})[/bold red]"
+            elif fpath in error_files:
+                status_badge = "[bold yellow]⚠ Triage Error (Uninspected)[/bold yellow]"
             elif partial_scan:
                 status_badge = "[yellow]Incomplete audit[/yellow]"
             elif hcount > 0:
@@ -228,8 +233,10 @@ def render_scan_stream(events: Generator[dict[str, Any], None, None]) -> None:
         f"• [bold]Suspicious Sinks Flagged:[/bold] {last_event.get('total_hotspots', len(confirmed_findings) + len(dismissed_findings))}",
         f"• [bold]False Alarms Discarded by AI:[/bold] {len(dismissed_findings)}",
         f"• [bold]Uncertain Findings Discarded (low confidence):[/bold] {len(low_conf_findings)}",
-        f"• [bold]Confirmed Vulnerabilities Saved to DB:[/bold] [bold red]{len(confirmed_findings)}[/bold red]"
     ])
+    if triage_errors:
+        summary_lines.append(f"• [bold red]Triage Failures (AI Offline/Error):[/bold red] [bold red]{len(triage_errors)}[/bold red]")
+    summary_lines.append(f"• [bold]Confirmed Vulnerabilities Saved to DB:[/bold] [bold red]{len(confirmed_findings)}[/bold red]")
 
     if confirmed_findings:
         f_ids = [str(f["id"]) for f in confirmed_findings if f.get("id")]
