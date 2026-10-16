@@ -1,0 +1,43 @@
+# Byte-compiled / optimized files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+
+# Virtual Environments
+.venv/
+env/
+venv/
+
+# Environment variables & secrets (keep .env.example tracked)
+.env
+.env.*
+*.env
+!.env.example
+
+# Databases
+*.sqlite
+*.sqlite3
+*.db
+
+# Cache & Temporary files
+.cache/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.log
+logs/
+scratch/
+reports/
+
+# IDE & Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store

@@ -1,0 +1,3 @@
+flask==0.12.2  # EXPECT: vulnerable_dependency
+pyyaml==5.1  # EXPECT: vulnerable_dependency
+requests==2.33.0  # SAFE

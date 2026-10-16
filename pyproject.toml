@@ -1,0 +1,17 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "puedobot"
+version = "0.1.0"
+description = "AI-Augmented SAST Agent"
+
+[project.scripts]
+puedobot = "app.cli.main:app"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = [
+    "network: tests that make live outbound network requests (deselect with '-m \"not network\"')",
+]
