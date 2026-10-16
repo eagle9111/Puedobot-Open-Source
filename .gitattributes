@@ -1,0 +1,3 @@
+# GitHub Linguist language statistics overrides
+benchmarks/corpus/* linguist-vendored
+tests/* linguist-documentation
