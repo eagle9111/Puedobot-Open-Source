@@ -116,7 +116,10 @@ def bounded_walk(root: str, topdown: bool = True) -> Iterator:
     """Preserve mutable dirs pruning while bounding directory enumeration itself."""
     budget = CURRENT_BUDGET.get()
     if budget is None:
-        yield from os.walk(root, topdown=topdown)
+        for cur, dirs, files in os.walk(root, topdown=topdown):
+            dirs.sort()
+            files.sort()
+            yield cur, dirs, files
         return
     pending = [os.fspath(root)]
     while pending:
@@ -133,6 +136,8 @@ def bounded_walk(root: str, topdown: bool = True) -> Iterator:
                     (dirs if entry.is_dir(follow_symlinks=False) else files).append(entry.name)
         except OSError:
             continue
+        dirs.sort()
+        files.sort()
         yield current, dirs, files
         pending.extend(os.path.join(current, name) for name in reversed(dirs)
                        if not os.path.islink(os.path.join(current, name)))

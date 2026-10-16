@@ -192,8 +192,3 @@ def scan_events(target_path, repo_id, **kwargs):
             yield {'type': 'engine_notice', 'message': f"Partial scan: {packet['reason']}. Saved findings remain available.", **summary}
             yield {'type': 'complete', 'total_files': packet['counts'].get('files', 0),
                    'total_hotspots': packet['counts'].get('triage', 0), 'confirmed_vulnerabilities': packet.get('confirmed', 0), **summary}
-
-
-def discover_candidates(**kwargs):
-    from app.services.github_service import GitHubService
-    return GitHubService().search_candidate_repositories(**kwargs)

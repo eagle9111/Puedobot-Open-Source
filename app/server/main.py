@@ -12,12 +12,30 @@ logging.basicConfig(
     datefmt="%Y-%m-%d %H:%M:%S",
 )
 
-# Refuse to start if PUEDOBOT_API_KEY is unset or empty
-if not settings.PUEDOBOT_API_KEY or not settings.PUEDOBOT_API_KEY.strip():
+DISALLOWED_API_KEY_PLACEHOLDERS = {
+    "generate_a_strong_random_secret_here",
+    "your_puedobot_api_key_here",
+    "replace_with_secure_api_key",
+    "changeme",
+    "secret",
+}
+
+raw_api_key = (settings.PUEDOBOT_API_KEY or "").strip()
+if not raw_api_key:
     raise RuntimeError(
         "CRITICAL STARTUP ERROR: PUEDOBOT_API_KEY is not set in environment. "
         "Server refuses to start without API authentication key. "
         "Set PUEDOBOT_API_KEY in your environment before launching PuedoBot."
+    )
+if len(raw_api_key) < 32:
+    raise RuntimeError(
+        f"CRITICAL STARTUP ERROR: PUEDOBOT_API_KEY is too weak ({len(raw_api_key)} chars). "
+        "Server requires at least 32 characters for security. Generate one via: openssl rand -hex 32"
+    )
+if raw_api_key.lower() in DISALLOWED_API_KEY_PLACEHOLDERS:
+    raise RuntimeError(
+        f"CRITICAL STARTUP ERROR: PUEDOBOT_API_KEY cannot use default/placeholder value {raw_api_key!r}. "
+        "Generate a real secret via: openssl rand -hex 32"
     )
 
 from contextlib import asynccontextmanager

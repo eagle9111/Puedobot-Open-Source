@@ -21,7 +21,7 @@ class Settings(BaseSettings):
     # Universal AI Configuration (Cloud / Remote)
     AI_API_KEY: str | None = None
     AI_API_URL: str | None = None
-    MODEL_NAME: str = "gemini-3.5-flash-lite"
+    MODEL_NAME: str = "gemini-2.5-flash"
 
     # Local AI Configuration (Ollama / vLLM)
     LOCAL_AI_URL: str = "http://127.0.0.1:11434/v1"
@@ -46,18 +46,12 @@ class Settings(BaseSettings):
 
     # Security & API Protection
     PUEDOBOT_API_KEY: str | None = None
-    PUEDOBOT_DASHBOARD_CODE: str | None = None
-    PUEDOBOT_DASHBOARD_SESSION_HOURS: int = Field(12, ge=1, le=168)
     PUEDOBOT_ALLOWED_ROOTS: str = ""
 
-    GITHUB_BOT_TOKEN: str | None = None
-    GITHUB_AGENT_USERNAME: str = "puedobot"
-    GITHUB_OWNER_USERNAME: str = "eagle9111"
 
     # Per-process admission and per-repository hard resource budgets.
     SCAN_ACTIVE_JOBS: int = Field(1, ge=1, le=4)
     SCAN_SECONDS: float = Field(900, ge=30, le=3600)
-    SCAN_AUTO_SECONDS: float = Field(3600, ge=60, le=14400)
     SCAN_ENTRIES: int = Field(30000, ge=100, le=100000)
     SCAN_FILES: int = Field(3000, ge=1, le=10000)
     SCAN_FILE_BYTES: int = Field(1048576, ge=1024, le=10485760)
@@ -81,11 +75,6 @@ class Settings(BaseSettings):
     ENABLE_VERIFIER: bool = True      # second, skeptical LLM pass that tries to refute each finding
 
     MIN_CONFIDENCE: int = 60          # below this a finding is discarded as too uncertain
-    PUBLISH_MIN_CONFIDENCE: int = 80  # below this the CLI warns before publishing to GitHub
-
-    # Autonomous Daemon Settings
-    AUTO_SCAN_DAEMON: bool = False
-    AUTO_SCAN_INTERVAL_MINUTES: int = 15
 
     @computed_field
     @property
@@ -97,7 +86,7 @@ class Settings(BaseSettings):
     def effective_model_name(self) -> str:
         if "MODEL_NAME" in self.model_fields_set and self.MODEL_NAME:
             return self.MODEL_NAME
-        return self.GEMINI_MODEL or self.MODEL_NAME or "gemini-3.5-flash-lite"
+        return self.GEMINI_MODEL or self.MODEL_NAME or "gemini-2.5-flash"
 
     @computed_field
     @property

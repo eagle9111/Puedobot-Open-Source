@@ -60,27 +60,54 @@ flowchart TD
 
 ## 🚀 Quick Start
 
-### 1. Installation
+### 1. Prerequisites (PostgreSQL & Python 3.11+)
+
+PuedoBot Core stores repository audit findings, triage status, and code context in PostgreSQL. 
+
+Start a local database in seconds using Docker:
+```bash
+docker run -d --name puedobot-db -p 5432:5432 -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=puedobot postgres:16-alpine
+```
+
+### 2. Installation
 
 ```bash
 git clone https://github.com/eagle9111/Puedobot-Open-Source.git
 cd Puedobot-Open-Source
 python3 -m venv .venv
 source .venv/bin/activate
-pip install -r requirements.txt
+
+# Editable install with core dependencies:
+pip install -e .
+
+# (Optional) Install with Semgrep support for multi-language rule auditing:
+pip install -e ".[semgrep]"
 ```
 
-### 2. Configuration
+> [!NOTE]
+> Without `[semgrep]`, non-Python files (JS, Go, Java, PHP) receive git secret scanning and OSV dependency tracking, while Python files receive full AST, Bandit, secret, and OSV scanning.
+
+### 3. Configuration
 
 Copy the sample environment file:
 ```bash
 cp .env.example .env
 ```
 
-Set your database and AI preference in `.env`:
+Generate a secure 32+ character API key for server authentication:
+```bash
+openssl rand -hex 32
+# Or via Python:
+python3 -c "import secrets; print(secrets.token_hex(32))"
+```
+
+Configure your database and AI preference in `.env`:
 
 #### Option A: Cloud AI (DeepSeek, OpenAI, Groq, Gemini, OpenRouter)
 ```dotenv
+# Server API Authentication (Required: at least 32 characters)
+PUEDOBOT_API_KEY=paste_your_generated_32_byte_secret_here
+
 # Use any OpenAI-compatible API:
 AI_API_URL=https://api.deepseek.com/v1     # Or OpenAI, Groq, OpenRouter, etc.
 AI_API_KEY=your_api_key_here
@@ -94,12 +121,14 @@ MODEL_NAME=deepseek-chat
 
 #### Option B: 100% Offline / Local (Ollama, vLLM, LM Studio)
 ```dotenv
+PUEDOBOT_API_KEY=paste_your_generated_32_byte_secret_here
+
 LOCAL_AI_URL=http://localhost:11434/v1
 LOCAL_AI_MODEL=qwen2.5-coder:7b
 AI_PRIORITY=local
 ```
 
-### 3. Initialize Database & Run
+### 4. Initialize Database & Run
 
 ```bash
 # 1. Initialize DB tables

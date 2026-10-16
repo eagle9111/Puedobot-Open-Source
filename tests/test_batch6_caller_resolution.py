@@ -43,9 +43,9 @@ def nested():
     sink()
 ''')
     index = RepoIndex(str(tmp_path))
-    assert edges(index, first, 'sink') == [(first, 'call'), (caller, 'route')]
-    assert edges(index, second, 'sink') == [(second, 'call'), (caller, 'route')]
-    assert edges(index, caller, 'nested.sink') == [(caller, 'nested')]
+    assert sorted(edges(index, first, 'sink')) == sorted([(first, 'call'), (caller, 'route')])
+    assert sorted(edges(index, second, 'sink')) == sorted([(second, 'call'), (caller, 'route')])
+    assert sorted(edges(index, caller, 'nested.sink')) == sorted([(caller, 'nested')])
 
 
 def test_reassignments_inheritance_star_import_and_unknown_bindings_are_omitted(tmp_path):

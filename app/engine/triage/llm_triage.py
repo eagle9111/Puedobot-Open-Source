@@ -199,6 +199,18 @@ def get_verifier_chain():
     return verifier_prompt | _routed_llm(VerificationResult)
 
 
+def sanitize_prompt_context(text: str | None) -> str:
+    """Neutralize delimiter breakout attempts in untrusted code snippets."""
+    if not text:
+        return ""
+    return (
+        text.replace("</untrusted_code_context>", "<\\/untrusted_code_context>")
+        .replace("<untrusted_code_context>", "<\\untrusted_code_context>")
+        .replace("</untrusted_extended_context>", "<\\/untrusted_extended_context>")
+        .replace("<untrusted_extended_context>", "<\\untrusted_extended_context>")
+    )
+
+
 def evaluate_hotspot(node: SuspiciousNode) -> SecurityTriageResult:
     """Evaluates a code hotspot using the prioritized model routing chain."""
     logger.info(f"Evaluating {node.function_name} in {node.file_path}:{node.line_number}...")
@@ -207,8 +219,8 @@ def evaluate_hotspot(node: SuspiciousNode) -> SecurityTriageResult:
         "source": node.source,
         "function_name": node.function_name,
         "line_number": node.line_number,
-        "code_context": node.code_context,
-        "extended_context": node.extended_context or "(not available)",
+        "code_context": sanitize_prompt_context(node.code_context),
+        "extended_context": sanitize_prompt_context(node.extended_context or "(not available)"),
     })
 
 
@@ -223,8 +235,8 @@ def challenge_finding(node: SuspiciousNode, result: SecurityTriageResult) -> Ver
         "description": result.description,
         "input_source": result.input_source,
         "exploit_payload": result.exploit_payload,
-        "code_context": node.code_context,
-        "extended_context": node.extended_context or "(not available)",
+        "code_context": sanitize_prompt_context(node.code_context),
+        "extended_context": sanitize_prompt_context(node.extended_context or "(not available)"),
     })
     if isinstance(raw, VerificationResult):
         return raw
